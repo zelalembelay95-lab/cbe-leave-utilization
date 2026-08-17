@@ -25,11 +25,11 @@ export default function Balances() {
     () =>
       rows.reduce(
         (acc, r) => ({
-          entitlement: acc.entitlement + r.balance.entitlement,
-          taken: acc.taken + r.balance.takenYTD,
+          netAccrual: acc.netAccrual + r.balance.netAccrual,
+          taken: acc.taken + r.balance.takenSinceImport,
           expiring: acc.expiring + r.balance.expiringDecember,
         }),
-        { entitlement: 0, taken: 0, expiring: 0 }
+        { netAccrual: 0, taken: 0, expiring: 0 }
       ),
     [rows]
   );
@@ -37,28 +37,28 @@ export default function Balances() {
   const yearEnded = year < currentYear() || (year === currentYear() && new Date().getMonth() === 11 && new Date().getDate() >= 31);
 
   function exportCsv() {
-    const header = ["ID", "Employee", "Annual Entitlement", "Leave Taken (YTD)", "Remaining Balance", yearEnded ? "Expired in December" : "Projected Expiring in December", "Net Balance"];
+    const header = ["ID", "Employee", "Net Accrual (HR)", "Taken via app", "Remaining", yearEnded ? "Expired in December" : "At risk of expiring (Dec 31)", "Net balance"];
     const data = rows.map((r) => [
       r.employee.id,
       r.employee.fullName,
-      r.balance.entitlement,
-      r.balance.takenYTD,
-      r.balance.remaining,
+      r.balance.netAccrual,
+      r.balance.takenSinceImport,
+      r.balance.netRemaining,
       r.balance.expiringDecember,
       r.balance.netBalance,
     ]);
     const csv = [header, ...data].map((r) => r.map(csvCell).join(",")).join("\n");
-    downloadFile(csv, `Annual-Leave-Balances_${year}.csv`, "text/csv");
+    downloadFile(csv, `Leave-Balances_${year}.csv`, "text/csv");
   }
 
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-cbe-ink">Annual Leave Balances</h1>
+          <h1 className="font-display text-2xl font-semibold text-cbe-ink">Leave Balances</h1>
           <p className="text-cbe-slate text-sm mt-1">
-            HR entitlement vs. actual leave taken. Ethiopian annual leave does not carry over — unused days expire on
-            December 31.
+            HR's net leave accrual per employee, reduced by leave submitted through this app. Unused balance in the
+            "expiring" bucket is lost on December 31 — no carry-over.
           </p>
         </div>
         <div className="flex items-end gap-3">
@@ -73,8 +73,8 @@ export default function Balances() {
       </div>
 
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
-        <StatCard tone="purple" label="Total entitlement" value={`${round(totals.entitlement)} days`} sub={`Across ${rows.length} employees`} />
-        <StatCard tone="white" label="Total leave taken" value={`${round(totals.taken)} days`} sub={`Year ${year} to date`} />
+        <StatCard tone="purple" label="Total net accrual" value={`${round(totals.netAccrual)} days`} sub={`Across ${rows.length} employees`} />
+        <StatCard tone="white" label="Taken since HR import" value={`${round(totals.taken)} days`} sub="Submitted via this app" />
         <StatCard
           tone="gold"
           label={yearEnded ? "Expired in December" : "At risk of expiring"}
@@ -92,10 +92,10 @@ export default function Balances() {
               <tr>
                 <th>ID</th>
                 <th>Employee</th>
-                <th>Entitlement</th>
-                <th>Taken (YTD)</th>
+                <th>Net accrual</th>
+                <th>Taken via app</th>
                 <th>Remaining</th>
-                <th>{yearEnded ? "Expired in Dec" : "Projected expiring"}</th>
+                <th>{yearEnded ? "Expired in Dec" : "At risk (Dec 31)"}</th>
                 <th>Net balance</th>
               </tr>
             </thead>
@@ -104,9 +104,9 @@ export default function Balances() {
                 <tr key={employee.id}>
                   <td className="font-mono text-xs">{employee.id}</td>
                   <td className="font-medium">{employee.fullName}</td>
-                  <td>{balance.entitlement}</td>
-                  <td>{balance.takenYTD}</td>
-                  <td>{balance.remaining}</td>
+                  <td>{balance.netAccrual}</td>
+                  <td>{balance.takenSinceImport}</td>
+                  <td>{balance.netRemaining}</td>
                   <td className={balance.expiringDecember > 0 ? "text-red-600 font-semibold" : "text-emerald-700"}>
                     {balance.expiringDecember}
                   </td>
@@ -119,9 +119,10 @@ export default function Balances() {
       )}
 
       <p className="text-xs text-cbe-slate mt-4">
-        "Projected expiring" shows what would be lost if the remaining balance stays unused through December 31 of
-        the selected year. Once the year has ended, the same column shows the actual number of days that expired,
-        and net balance drops to 0 for any unused amount.
+        "Net accrual" and the December-expiring amount come from HR's leave export. "Taken via app" is leave
+        submitted here since that export, applied against the expiring bucket first. Before December 31, the
+        expiring column is a live forecast; an employee who used it all shows <strong>0</strong>. After December 31
+        it becomes the actual amount lost, and net balance reflects only the portion that survives.
       </p>
     </div>
   );
