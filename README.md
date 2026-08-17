@@ -65,12 +65,15 @@ supabase/
 
 | Role | Can do |
 |---|---|
-| **Admin** | Add/edit/remove employees, set annual entitlements, approve new accounts and assign roles, view every report |
+| **Admin** | Add/edit/remove employees, set annual entitlements, approve new accounts and assign roles, **create accounts directly with a chosen email/password/role**, view every report |
 | **Manager** | Read-only: weekly report, monthly report, annual balances, overview dashboard |
 | **Team Leader** | Submit weekly leave for their team; view the reports for what they've submitted |
 | **Employee** | View their own leave history and annual balance only |
 
 New sign-ups start as **Pending** with no access until an Admin approves them from **Admin → Users & Roles**.
+Admins can also skip that step entirely and **create an account directly** from the same screen — pick an
+email, a password, and a role up front, then share the credentials with that person so they can sign in right
+away. Both paths work side by side: self-signup (pending → approved) and admin-created (ready immediately).
 
 ---
 
