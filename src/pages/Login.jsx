@@ -57,7 +57,7 @@ export default function Login() {
             </h1>
             <p className="mt-5 text-white/70 text-base leading-relaxed">
               Submit weekly leave, roll it up into monthly reports automatically, and track every
-              employee's balance against December's no-carry-over deadline  all in one place.
+              employee's balance against December's no-carry-over deadline all in one place.
             </p>
             <div className="mt-8 flex gap-6 text-sm text-white/60">
               <div>
