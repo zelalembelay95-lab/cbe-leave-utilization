@@ -36,6 +36,10 @@ export async function setUserRole(uid, role, extra = {}) {
   await apiPost("/api/users", { uid, role, ...extra });
 }
 
+export async function adminCreateUser({ email, password, displayName, role, employeeId }) {
+  return apiPost("/api/admin-create-user", { email, password, displayName, role, employeeId });
+}
+
 /* -------------------------------- Employees ------------------------------ */
 
 export function watchEmployees(cb) {
