@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { watchEmployees, upsertEmployee, deleteEmployee } from "../services/db";
 import { watchUsers } from "../services/db";
-import { DEFAULT_ANNUAL_ENTITLEMENT, DIVISION, SECTOR, seedEmployees } from "../data/seedEmployees";
+import { DIVISION, SECTOR, seedEmployees } from "../data/seedEmployees";
 import EmptyState from "../components/ui/EmptyState";
 
 const BLANK = {
@@ -11,7 +11,8 @@ const BLANK = {
   department: "",
   sector: SECTOR,
   division: DIVISION,
-  annualEntitlement: DEFAULT_ANNUAL_ENTITLEMENT,
+  netAccrualTillNow: 0,
+  leaveExpiringDec31: 0,
   status: "active",
 };
 
@@ -41,7 +42,11 @@ export default function AdminEmployees() {
     if (!form.id || !form.fullName) return;
     setBusy(true);
     try {
-      await upsertEmployee({ ...form, annualEntitlement: Number(form.annualEntitlement) || 0 });
+      await upsertEmployee({
+        ...form,
+        netAccrualTillNow: Number(form.netAccrualTillNow) || 0,
+        leaveExpiringDec31: Number(form.leaveExpiringDec31) || 0,
+      });
       resetForm();
     } finally {
       setBusy(false);
@@ -54,7 +59,7 @@ export default function AdminEmployees() {
   }
 
   async function handleSeed() {
-    if (!confirm(`Load ${seedEmployees.length} employees from the roster extracted from your uploaded files?`)) return;
+    if (!confirm(`Load/refresh ${seedEmployees.length} employees, including their HR leave balances?`)) return;
     setSeeding(true);
     try {
       for (const emp of seedEmployees) await upsertEmployee(emp);
@@ -73,13 +78,13 @@ export default function AdminEmployees() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="font-display text-2xl font-semibold text-cbe-ink">Employees</h1>
-          <p className="text-cbe-slate text-sm mt-1">Manage the employee roster that team leaders report leave against.</p>
+          <p className="text-cbe-slate text-sm mt-1">
+            Manage the roster and each employee's HR leave balance (net accrual and what's expiring in December).
+          </p>
         </div>
-        {!employees.length && (
-          <button onClick={handleSeed} disabled={seeding} className="btn-gold">
-            {seeding ? "Loading roster…" : "Load starter roster"}
-          </button>
-        )}
+        <button onClick={handleSeed} disabled={seeding} className="btn-gold">
+          {seeding ? "Loading…" : employees.length ? "Reload HR balances" : "Load starter roster"}
+        </button>
       </div>
 
       <div className="grid lg:grid-cols-[380px_1fr] gap-6">
@@ -114,16 +119,37 @@ export default function AdminEmployees() {
               <input className="input" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />
             </div>
           </div>
-          <div>
-            <label className="label">Annual leave entitlement (days)</label>
-            <input
-              type="number"
-              className="input"
-              value={form.annualEntitlement}
-              onChange={(e) => setForm({ ...form, annualEntitlement: e.target.value })}
-              min="0"
-            />
+
+          <div className="rounded-xl bg-cbe-purple-50 p-3.5 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-cbe-purple-800">HR leave balance</p>
+            <div>
+              <label className="label">Net accrual till now (days)</label>
+              <input
+                type="number"
+                step="0.5"
+                className="input"
+                value={form.netAccrualTillNow}
+                onChange={(e) => setForm({ ...form, netAccrualTillNow: e.target.value })}
+                min="0"
+              />
+            </div>
+            <div>
+              <label className="label">Of that, expiring Dec 31 if unused (days)</label>
+              <input
+                type="number"
+                step="0.5"
+                className="input"
+                value={form.leaveExpiringDec31}
+                onChange={(e) => setForm({ ...form, leaveExpiringDec31: e.target.value })}
+                min="0"
+              />
+            </div>
+            <p className="text-[11px] text-cbe-slate leading-relaxed">
+              From HR's export. Leave submitted through this app afterward reduces both figures automatically —
+              you don't need to update these by hand for day-to-day leave.
+            </p>
           </div>
+
           <div>
             <label className="label">Status</label>
             <select className="input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
@@ -145,7 +171,7 @@ export default function AdminEmployees() {
 
         <div>
           {!employees.length ? (
-            <EmptyState title="No employees yet" body="Add your first employee, or load the starter roster extracted from your uploaded files." />
+            <EmptyState title="No employees yet" body="Add your first employee, or load the starter roster with HR balances already filled in." />
           ) : (
             <div className="table-shell">
               <table className="report">
@@ -155,7 +181,8 @@ export default function AdminEmployees() {
                     <th>Name</th>
                     <th>Position</th>
                     <th>Department</th>
-                    <th>Entitlement</th>
+                    <th>Net accrual</th>
+                    <th>Expiring Dec 31</th>
                     <th>Status</th>
                     <th></th>
                   </tr>
@@ -167,7 +194,10 @@ export default function AdminEmployees() {
                       <td className="font-medium">{emp.fullName}</td>
                       <td>{emp.position}</td>
                       <td>{emp.department}</td>
-                      <td>{emp.annualEntitlement} days</td>
+                      <td>{emp.netAccrualTillNow ?? 0} days</td>
+                      <td className={emp.leaveExpiringDec31 > 0 ? "text-red-600 font-semibold" : ""}>
+                        {emp.leaveExpiringDec31 ?? 0} days
+                      </td>
                       <td>
                         <span className={`badge ${emp.status === "active" ? "bg-emerald-100 text-emerald-800" : "bg-cbe-purple-100 text-cbe-purple-800"}`}>
                           {emp.status}
