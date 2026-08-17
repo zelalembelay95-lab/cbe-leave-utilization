@@ -20,7 +20,7 @@ create table if not exists app_users (
   created_at timestamptz not null default now()
 );
 
--- The HR/Oracle employee roster.
+-- The HR/Oracle employee roster + HR's leave balance export.
 create table if not exists employees (
   id text primary key,                -- staff ID, e.g. "70695"
   full_name text not null,
@@ -28,7 +28,9 @@ create table if not exists employees (
   department text not null default '',
   sector text not null default '',
   division text not null default '',
-  annual_entitlement numeric not null default 0,
+  -- From HR's leave balance export:
+  net_accrual_tillnow numeric not null default 0,   -- total unused leave accrued as of the export
+  leave_expiring_dec31 numeric not null default 0,  -- portion of the above lost if unused by Dec 31
   status text not null default 'active' check (status in ('active','inactive'))
 );
 
