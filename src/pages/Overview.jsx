@@ -100,7 +100,7 @@ export default function Overview() {
                   <div>
                     <p className="text-sm font-medium">{emp.fullName}</p>
                     <p className="text-xs text-cbe-slate">
-                      {balance.takenYTD} of {balance.entitlement} days used
+                      {balance.takenSinceImport} taken via app · {balance.netAccrual} net accrual
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-red-600">{balance.expiringDecember} days</p>
