@@ -5,6 +5,7 @@ export default function PendingApproval() {
   return (
     <div className="min-h-screen bg-cbe-hero flex items-center justify-center px-4">
       <div className="card max-w-md text-center">
+        <img src="/cbe-logo.svg" alt="Commercial Bank of Ethiopia" className="mx-auto w-12 h-12 mb-4" />
         <div className="mx-auto w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xl mb-4">
           ⏳
         </div>
