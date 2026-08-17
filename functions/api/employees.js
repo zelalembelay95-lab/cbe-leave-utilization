@@ -36,7 +36,8 @@ export async function onRequestPost(context) {
       department: body.department || "",
       sector: body.sector || "",
       division: body.division || "",
-      annual_entitlement: Number(body.annualEntitlement) || 0,
+      net_accrual_tillnow: Number(body.netAccrualTillNow) || 0,
+      leave_expiring_dec31: Number(body.leaveExpiringDec31) || 0,
       status: body.status || "active",
     };
     await supabaseJson(env, {
@@ -77,7 +78,8 @@ function toEmployee(row) {
     department: row.department,
     sector: row.sector,
     division: row.division,
-    annualEntitlement: Number(row.annual_entitlement),
+    netAccrualTillNow: Number(row.net_accrual_tillnow),
+    leaveExpiringDec31: Number(row.leave_expiring_dec31),
     status: row.status,
   };
 }
