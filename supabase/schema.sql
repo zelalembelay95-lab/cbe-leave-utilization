@@ -52,7 +52,7 @@ create table if not exists leave_entries (
   submitted_by_uid text not null,
   submitted_by_name text,
   submitted_at timestamptz not null default now()
-);
+); 
 
 create index if not exists leave_entries_year_idx on leave_entries (year);
 create index if not exists leave_entries_week_start_idx on leave_entries (week_start);
