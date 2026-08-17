@@ -37,8 +37,8 @@ export default function Shell({ children }) {
     <div className="min-h-screen flex bg-cbe-purple-50">
       <aside className="hidden md:flex w-64 shrink-0 flex-col bg-cbe-hero text-white">
         <div className="px-6 py-6 flex items-center gap-3 border-b border-white/10">
-          <div className="w-10 h-10 rounded-xl bg-cbe-gold-500 flex items-center justify-center text-cbe-purple-950 font-display font-bold text-lg">
-            CBE
+          <div className="w-11 h-11 rounded-xl bg-white/95 flex items-center justify-center p-1.5 shadow-card shrink-0">
+            <img src="/cbe-logo.svg" alt="Commercial Bank of Ethiopia" className="w-full h-full object-contain" />
           </div>
           <div>
             <p className="font-display font-semibold leading-tight">Leave Utilization</p>
@@ -70,8 +70,8 @@ export default function Shell({ children }) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="bg-white border-b border-cbe-purple-100 px-4 md:px-8 py-4 flex items-center justify-between gap-4">
           <div className="md:hidden flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-cbe-purple-900 flex items-center justify-center text-cbe-gold-400 font-display font-bold text-sm">
-              CBE
+            <div className="w-8 h-8 rounded-lg bg-cbe-purple-900 flex items-center justify-center p-1 shrink-0">
+              <img src="/cbe-logo.svg" alt="Commercial Bank of Ethiopia" className="w-full h-full object-contain" />
             </div>
             <p className="font-display font-semibold text-sm">Leave Utilization</p>
           </div>
