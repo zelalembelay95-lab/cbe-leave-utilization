@@ -8,9 +8,9 @@ workflow with one system that:
 - The app **auto-builds the weekly report** in your existing Excel layout (S.N, ID, Name, Sector/Division,
   Department/Unit, Position, Days, Start, End, Total).
 - Weekly reports **roll up into a monthly report** automatically — no manual copy-paste.
-- The app tracks each employee's **annual leave balance**: entitlement (set by HR) − leave actually taken,
-  what will **expire in December** (Ethiopian annual leave has no carry-over), and the resulting net balance —
-  showing **0** for anyone who used up all their leave by year end.
+- The app tracks each employee's **leave balance directly from HR's export**: net leave accrual to date, and
+  what portion of it will **expire on December 31** if unused (Ethiopian annual leave has no carry-over) —
+  automatically reduced further by any leave submitted through the app since that export.
 - Four roles: **Admin**, **Manager** (read-only oversight), **Team Leader** (submits weekly leave), **Employee**
   (views their own leave & balance).
 - Visual style adapted from CBE's brand: deep purple + gold, serif display type for headings, clean data tables.
@@ -160,12 +160,14 @@ Every new sign-up starts with no access, so bootstrap the first one by hand:
 
 - **Weekly report** — groups all leave entries whose reporting week (Monday of that week) matches the selected week, in your Excel's columns: S.N, ID, Name, Sector/Division, Department/Unit, Position, # Days, Start, End, Total.
 - **Monthly report** — sums every entry submitted for a calendar month/employee. Because team leaders split leave that spans a reporting-week boundary (same as your original form's instructions), each entry already belongs cleanly to one month.
-- **Annual balance**, per employee, per year:
-  - **Entitlement** — set by an Admin per employee (from HR).
-  - **Taken (YTD)** — sum of that employee's leave entries for the year.
-  - **Remaining balance** = Entitlement − Taken.
-  - **Expiring in December** — no carry-over, so this equals the remaining balance. Before December 31 it's a live forecast; an employee who used everything shows **0**. After December 31 it becomes the actual amount that expired.
-  - **Net balance** = Remaining balance while the year is open; **0** once the year has ended. Adjust `computeAnnualBalance()` in `src/utils/leaveEngine.js` if HR allows partial carry-over instead.
+- **Leave balance**, per employee, per year — driven by HR's own export rather than a generic entitlement formula:
+  - **Net accrual (HR)** — total unused leave accrued as of HR's export, entered per employee under Admin → Employees (or bulk-loaded from `src/data/seedEmployees.js`).
+  - **Expiring Dec 31 (HR)** — the portion of that accrual that is **lost if unused by December 31** (no carry-over). The rest of the net accrual is safe and carries forward regardless of December.
+  - **Taken via app** — leave submitted through this app for that year, treated as happening *after* HR's export. It's applied against the expiring bucket first (since that's the leave most at risk), then against the rest of the balance.
+  - **Remaining** = Net accrual − Taken via app.
+  - **Net balance** = Remaining while the year is still open; after December 31, only the *expiring* bucket is actually lost, so net balance = Remaining − whatever was still expiring.
+  - Re-import updated HR balances any time from **Admin → Employees**; day-to-day leave doesn't require manual balance edits.
+  - Adjust `computeAnnualBalance()` in `src/utils/leaveEngine.js` if HR's carry-over policy changes.
 
 ---
 
@@ -180,6 +182,11 @@ Every new sign-up starts with no access, so bootstrap the first one by hand:
 
 ## 7. Brand notes
 
-The purple/gold palette and serif display type are a design interpretation of CBE's brand for this internal tool —
-if your bank's brand team has exact hex codes and a logo file, update `tailwind.config.js`
-(`theme.extend.colors.cbe`) and `public/leaf.svg` / `src/components/layout/Shell.jsx` to match exactly.
+The color palette (deep brown `#3E1C11` / bronze `#815630` / gold `#D0A12A`) is extracted directly from your
+uploaded CBE logo (`public/cbe-logo.svg`), not a guess — it's used across the login page, sidebar, buttons, and
+report tables. If you get an updated logo file, replace `public/cbe-logo.svg` (same filename), and update the hex
+values in `tailwind.config.js` (`theme.extend.colors.cbe`) to match if the palette changes.
+
+Two employees from HR's balance export (`70595 — Bitew Bikale Woldetsadik` and `55950 — Yemisrach Teklu Abebe`)
+weren't in the original roster form, so they've been added with placeholder positions/departments — update those
+from **Admin → Employees** once you know their actual role.
