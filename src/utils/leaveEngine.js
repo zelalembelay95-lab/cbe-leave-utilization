@@ -62,40 +62,55 @@ export function buildMonthlyReport(entries, year, month) {
 }
 
 /**
- * Compute an employee's annual leave balance and December expiry, per HR's
- * rule that approved annual leave must be used within the calendar year.
+ * Compute an employee's leave balance from HR's authoritative export plus
+ * anything submitted through this app since that export.
  *
- * @param {Object} employee - { annualEntitlement }
- * @param {Array} entries - all of this employee's leave entries for `year`
+ * HR supplies two numbers per employee (see src/data/seedEmployees.js):
+ *   - netAccrualTillNow  — total unused leave accrued as of the export date.
+ *   - leaveExpiringDec31 — the part of that balance that is LOST if unused
+ *     by December 31 (no carry-over). The remainder of netAccrualTillNow
+ *     (netAccrualTillNow − leaveExpiringDec31) is safe and carries forward
+ *     regardless of December.
+ *
+ * Any leave submitted via the app for `year` is treated as taken *after*
+ * that HR export, and is applied against the expiring bucket first (since
+ * it's the leave most at risk of being lost), then against the rest of the
+ * balance.
+ *
+ * @param {Object} employee - { id, netAccrualTillNow, leaveExpiringDec31 }
+ * @param {Array} entries - this employee's leave entries submitted via the app
  * @param {number} year
  * @param {Date} [asOf] - defaults to now; lets you preview any point in time
  */
 export function computeAnnualBalance(employee, entries, year, asOf = new Date()) {
-  const entitlement = Number(employee.annualEntitlement || 0);
-  const takenYTD = round2(
+  const hrNetAccrual = round2(Number(employee.netAccrualTillNow || 0));
+  const hrExpiring = round2(Number(employee.leaveExpiringDec31 || 0));
+
+  const takenSinceImport = round2(
     entries
       .filter((e) => e.year === year && e.employeeId === employee.id)
       .reduce((s, e) => s + Number(e.daysCount || 0), 0)
   );
-  const remaining = round2(Math.max(entitlement - takenYTD, 0));
+
+  const usedAgainstExpiring = Math.min(takenSinceImport, hrExpiring);
+  const expiringRemaining = round2(Math.max(hrExpiring - usedAgainstExpiring, 0));
+  const netRemaining = round2(Math.max(hrNetAccrual - takenSinceImport, 0));
 
   const isPastYear = asOf.getFullYear() > year;
   const isCurrentYear = asOf.getFullYear() === year;
   const yearHasEnded = isPastYear || (isCurrentYear && asOf.getMonth() === 11 && asOf.getDate() >= 31);
 
-  // Days that will be lost (no carry-over) if not used by Dec 31.
-  // Before the year ends this is a live forecast; once the year has ended
-  // it is the actual amount that expired.
-  const expiringDecember = remaining; // policy: 100% of unused entitlement expires, no carry-over
-  const netBalance = yearHasEnded ? 0 : remaining;
+  // Once the year ends, only the *expiring* bucket is actually lost — the
+  // rest of the balance (this year's fresh, non-expiring accrual) survives.
+  const netAfterExpiry = round2(Math.max(netRemaining - expiringRemaining, 0));
 
   return {
     year,
-    entitlement,
-    takenYTD,
-    remaining,
-    expiringDecember: round2(expiringDecember),
-    netBalance: round2(netBalance),
+    netAccrual: hrNetAccrual,
+    takenSinceImport,
+    netRemaining,
+    expiringDecember: expiringRemaining,
+    netBalance: yearHasEnded ? netAfterExpiry : netRemaining,
     status: yearHasEnded ? "expired" : "active",
   };
 }
