@@ -57,7 +57,7 @@ export default function Login() {
             </h1>
             <p className="mt-5 text-white/70 text-base leading-relaxed">
               Submit weekly leave, roll it up into monthly reports automatically, and track every
-              employee's balance against December's no-carry-over deadline — all in one place.
+              employee's balance against December's no-carry-over deadline  all in one place.
             </p>
             <div className="mt-8 flex gap-6 text-sm text-white/60">
               <div>
@@ -100,7 +100,7 @@ export default function Login() {
 
             {!firebaseConfigured && (
               <div className="mb-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-2.5">
-                Firebase isn't configured yet. Add your project keys to <code>.env</code> — see{" "}
+                Firebase isn't configured yet. Add your project keys to <code>.env</code>   see{" "}
                 <strong>README.md → Go live</strong>.
               </div>
             )}
