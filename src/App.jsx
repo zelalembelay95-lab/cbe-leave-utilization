@@ -1,0 +1,103 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Shell from "./components/layout/Shell";
+import Login from "./pages/Login";
+import PendingApproval from "./pages/PendingApproval";
+import Overview from "./pages/Overview";
+import TeamLeaderSubmit from "./pages/TeamLeaderSubmit";
+import EmployeeSelf from "./pages/EmployeeSelf";
+import WeeklyReport from "./pages/WeeklyReport";
+import MonthlyReport from "./pages/MonthlyReport";
+import Balances from "./pages/Balances";
+import AdminEmployees from "./pages/AdminEmployees";
+import AdminUsers from "./pages/AdminUsers";
+
+function Gate() {
+  const { user, profile, loading, firebaseConfigured } = useAuth();
+
+  if (!firebaseConfigured) return <Login />;
+  if (loading) return <SplashScreen />;
+  if (!user) return <Login />;
+  if (!profile || profile.role === "pending") return <PendingApproval />;
+
+  return (
+    <Shell>
+      <Routes>
+        <Route path="/" element={<HomeForRole role={profile.role} />} />
+        <Route
+          path="/weekly"
+          element={
+            <RoleRoute allow={["admin", "manager", "team_leader"]} role={profile.role}>
+              <WeeklyReport />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/monthly"
+          element={
+            <RoleRoute allow={["admin", "manager", "team_leader"]} role={profile.role}>
+              <MonthlyReport />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/balances"
+          element={
+            <RoleRoute allow={["admin", "manager"]} role={profile.role}>
+              <Balances />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/employees"
+          element={
+            <RoleRoute allow={["admin"]} role={profile.role}>
+              <AdminEmployees />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <RoleRoute allow={["admin"]} role={profile.role}>
+              <AdminUsers />
+            </RoleRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Shell>
+  );
+}
+
+function HomeForRole({ role }) {
+  if (role === "admin" || role === "manager") return <Overview />;
+  if (role === "team_leader") return <TeamLeaderSubmit />;
+  if (role === "employee") return <EmployeeSelf />;
+  return <PendingApproval />;
+}
+
+function RoleRoute({ allow, role, children }) {
+  if (!allow.includes(role)) return <Navigate to="/" replace />;
+  return children;
+}
+
+function SplashScreen() {
+  return (
+    <div className="min-h-screen bg-cbe-hero flex items-center justify-center">
+      <div className="w-14 h-14 rounded-2xl bg-cbe-gold-500 flex items-center justify-center text-cbe-purple-950 font-display font-bold text-xl animate-pulse">
+        CBE
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Gate />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}

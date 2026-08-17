@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-cbe-purple-50 text-cbe-ink font-sans antialiased;
+  }
+  h1, h2, h3 { font-family: theme('fontFamily.display'); }
+  ::selection { background: #F2A900; color: #2A0E45; }
+  :focus-visible {
+    outline: 2px solid #F2A900;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-cbe-purple-100 p-6;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-cbe-purple-800 text-white hover:bg-cbe-purple-900;
+  }
+  .btn-gold {
+    @apply btn bg-cbe-gold-500 text-cbe-purple-950 hover:bg-cbe-gold-600;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-cbe-purple-800 hover:bg-cbe-purple-100;
+  }
+  .btn-danger {
+    @apply btn bg-red-50 text-red-700 hover:bg-red-100;
+  }
+  .input {
+    @apply w-full rounded-xl border border-cbe-purple-100 bg-white px-3.5 py-2.5 text-sm text-cbe-ink placeholder:text-cbe-slate/60 focus:border-cbe-purple-500 focus:ring-2 focus:ring-cbe-purple-100 outline-none transition;
+  }
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-wide text-cbe-slate mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+  .table-shell {
+    @apply w-full overflow-x-auto rounded-2xl border border-cbe-purple-100;
+  }
+  table.report {
+    @apply w-full text-sm border-collapse;
+  }
+  table.report th {
+    @apply bg-cbe-purple-900 text-white text-left px-3 py-2.5 font-semibold text-xs uppercase tracking-wide sticky top-0;
+  }
+  table.report td {
+    @apply px-3 py-2.5 border-b border-cbe-purple-50 text-cbe-ink;
+  }
+  table.report tbody tr:hover { @apply bg-cbe-purple-50/60; }
+}
