@@ -55,9 +55,9 @@ export default function EmployeeSelf() {
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard tone="purple" label="Annual entitlement" value={`${balance.entitlement} days`} />
-        <StatCard tone="white" label="Taken this year" value={`${balance.takenYTD} days`} />
-        <StatCard tone="white" label="Remaining balance" value={`${balance.remaining} days`} />
+        <StatCard tone="purple" label="Net accrual (HR)" value={`${balance.netAccrual} days`} />
+        <StatCard tone="white" label="Taken via app this year" value={`${balance.takenSinceImport} days`} />
+        <StatCard tone="white" label="Remaining balance" value={`${balance.netRemaining} days`} />
         <StatCard
           tone="gold"
           label={balance.status === "expired" ? "Expired in December" : "At risk of expiring"}
