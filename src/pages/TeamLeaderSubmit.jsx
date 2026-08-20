@@ -100,7 +100,7 @@ export default function TeamLeaderSubmit() {
           />
           <p className="text-xs text-cbe-slate mt-1.5">
             Week of <strong>{formatLong(weekStart)}</strong> – <strong>{formatLong(weekEnd)}</strong>. Pick any day;
-            it snaps to that reporting week's Friday–Thursday (HRBP's official week).
+            it snaps to that reporting week's Monday–Saturday.
           </p>
         </div>
 
