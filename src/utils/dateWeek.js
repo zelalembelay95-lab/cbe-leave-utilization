@@ -1,7 +1,5 @@
-// Reporting weeks run Friday -> Thursday, matching HRBP's official weekly
-// leave utilization report ("Employees on Leave during the Week dated
-// Friday <date> to <date>" ... "The Report Shall be sent Every Friday to
-// the HRBP Department").
+// Reporting weeks run Monday -> Saturday (e.g. Monday Aug 17, 2026 through
+// Saturday Aug 22, 2026), matching the weekly leave utilization workflow.
 
 export function toISO(date) {
   // IMPORTANT: build the "YYYY-MM-DD" string from LOCAL date parts, not
@@ -21,21 +19,21 @@ export function parseISO(iso) {
   return new Date(y, m - 1, d);
 }
 
-// Given any date, return the Friday that starts its reporting week (as an
-// ISO date string). If the date itself is a Friday, it returns that date.
+// Given any date, return the Monday that starts its reporting week (as an
+// ISO date string). If the date itself is a Monday, it returns that date.
 export function startOfReportWeek(dateLike) {
   const d = dateLike instanceof Date ? new Date(dateLike) : parseISO(dateLike);
-  const day = d.getDay(); // 0 = Sun ... 5 = Fri ... 6 = Sat
-  const diff = (day - 5 + 7) % 7; // days since the most recent Friday
+  const day = d.getDay(); // 0 = Sun ... 1 = Mon ... 6 = Sat
+  const diff = (day - 1 + 7) % 7; // days since the most recent Monday
   d.setDate(d.getDate() - diff);
   d.setHours(0, 0, 0, 0);
   return toISO(d);
 }
 
-// Thursday that ends the reporting week started by `fridayIso`.
-export function endOfReportWeek(fridayIso) {
-  const d = parseISO(fridayIso);
-  d.setDate(d.getDate() + 6);
+// Saturday that ends the reporting week started by `mondayIso` (Mon + 5 days).
+export function endOfReportWeek(mondayIso) {
+  const d = parseISO(mondayIso);
+  d.setDate(d.getDate() + 5);
   return toISO(d);
 }
 
@@ -62,7 +60,7 @@ export function monthLabel(year, month) {
   return new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-// Build the list of Friday-start reporting weeks that fall (fully or
+// Build the list of Monday-start reporting weeks that fall (fully or
 // partly) inside a given calendar month.
 export function weeksInMonth(year, month) {
   const first = new Date(year, month - 1, 1);
