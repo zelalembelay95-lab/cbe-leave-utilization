@@ -36,7 +36,7 @@ export default function WeeklyReport() {
         </div>
         <div className="flex items-end gap-3">
           <div>
-            <label className="label">Reporting week (Friday–Thursday)</label>
+            <label className="label">Reporting week (Monday–Saturday)</label>
             <input
               type="date"
               className="input"
