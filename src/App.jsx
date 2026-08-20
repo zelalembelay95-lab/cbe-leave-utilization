@@ -27,7 +27,7 @@ function Gate() {
         <Route
           path="/weekly"
           element={
-            <RoleRoute allow={["admin", "manager", "team_leader"]} role={profile.role}>
+            <RoleRoute allow={["admin", "manager", "team_leader", "employee"]} role={profile.role}>
               <WeeklyReport />
             </RoleRoute>
           }
