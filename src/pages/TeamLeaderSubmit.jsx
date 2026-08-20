@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { watchEmployees, addLeaveEntry } from "../services/db";
-import { mondayOf, saturdayOf, formatLong, toISO } from "../utils/dateWeek";
+import { startOfReportWeek, endOfReportWeek, formatLong, toISO } from "../utils/dateWeek";
 import { decorateEntryWithWeek, round2 } from "../utils/leaveEngine";
 import EmptyState from "../components/ui/EmptyState";
 
@@ -13,7 +13,7 @@ export default function TeamLeaderSubmit() {
   const { profile } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [employeeId, setEmployeeId] = useState("");
-  const [weekStart, setWeekStart] = useState(mondayOf(new Date()));
+  const [weekStart, setWeekStart] = useState(startOfReportWeek(new Date()));
   const [periods, setPeriods] = useState([blankPeriod()]);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
@@ -21,7 +21,7 @@ export default function TeamLeaderSubmit() {
   useEffect(() => watchEmployees(setEmployees), []);
 
   const employee = useMemo(() => employees.find((e) => e.id === employeeId), [employees, employeeId]);
-  const weekEnd = saturdayOf(weekStart);
+  const weekEnd = endOfReportWeek(weekStart);
 
   function updatePeriod(key, field, value) {
     setPeriods((prev) => prev.map((p) => (p.key === key ? { ...p, [field]: value } : p)));
@@ -96,11 +96,11 @@ export default function TeamLeaderSubmit() {
             type="date"
             className="input max-w-xs"
             value={weekStart}
-            onChange={(e) => setWeekStart(mondayOf(e.target.value))}
+            onChange={(e) => setWeekStart(startOfReportWeek(e.target.value))}
           />
           <p className="text-xs text-cbe-slate mt-1.5">
             Week of <strong>{formatLong(weekStart)}</strong> – <strong>{formatLong(weekEnd)}</strong>. Pick any day;
-            it snaps to that week's Monday–Saturday.
+            it snaps to that reporting week's Friday–Thursday (HRBP's official week).
           </p>
         </div>
 
