@@ -1,4 +1,4 @@
-import { mondayOf, saturdayOf } from "./dateWeek";
+import { startOfReportWeek, endOfReportWeek } from "./dateWeek";
 
 /**
  * Build the weekly report exactly in the shape of the uploaded Excel
@@ -6,11 +6,11 @@ import { mondayOf, saturdayOf } from "./dateWeek";
  * Position | #Days | Start | End | Total").
  *
  * @param {Array} entries - leave entries (already filtered to the org/team the caller may see)
- * @param {string} weekStart - Monday ISO date
+ * @param {string} weekStart - Friday ISO date (start of the HRBP reporting week)
  * @returns {{ weekStart, weekEnd, rows, totalDays }}
  */
 export function buildWeeklyReport(entries, weekStart) {
-  const weekEnd = saturdayOf(weekStart);
+  const weekEnd = endOfReportWeek(weekStart);
   const rows = entries
     .filter((e) => e.weekStart === weekStart)
     .sort((a, b) => a.employeeName.localeCompare(b.employeeName))
@@ -33,7 +33,7 @@ export function buildWeeklyReport(entries, weekStart) {
 
 /**
  * Aggregate every entry that belongs to a given calendar month (grouped by
- * the Monday of the reporting week the entry was submitted under, matching
+ * the Friday that starts the reporting week the entry was submitted under, matching
  * how team leaders already split multi-week leave in the source workbook).
  */
 export function buildMonthlyReport(entries, year, month) {
@@ -120,14 +120,14 @@ export function round2(n) {
 }
 
 // Derive weekStart/weekEnd/month/year metadata for a leave entry given the
-// reporting week's Monday date (used at submission time).
+// reporting week's Friday date (used at submission time).
 export function decorateEntryWithWeek(entry, weekStartISO) {
-  const monday = mondayOf(weekStartISO);
+  const monday = startOfReportWeek(weekStartISO);
   const d = new Date(monday);
   return {
     ...entry,
     weekStart: monday,
-    weekEnd: saturdayOf(monday),
+    weekEnd: endOfReportWeek(monday),
     month: d.getMonth() + 1,
     year: d.getFullYear(),
   };
