@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { watchLeaveEntries, watchEmployees } from "../services/db";
 import { buildWeeklyReport, buildMonthlyReport, computeAnnualBalance } from "../utils/leaveEngine";
-import { mondayOf, currentMonth, currentYear, monthLabel, formatShort, toISO } from "../utils/dateWeek";
+import { startOfReportWeek, currentMonth, currentYear, monthLabel, formatShort, toISO } from "../utils/dateWeek";
 import StatCard from "../components/ui/StatCard";
 import EmptyState from "../components/ui/EmptyState";
 import { useAuth } from "../context/AuthContext";
@@ -14,7 +14,7 @@ export default function Overview() {
   const [entries, setEntries] = useState([]);
   const year = currentYear();
   const month = currentMonth();
-  const weekStart = mondayOf(new Date());
+  const weekStart = startOfReportWeek(new Date());
 
   useEffect(() => watchEmployees(setEmployees), []);
   useEffect(() => watchLeaveEntries(setEntries, { year }), [year]);
