@@ -24,6 +24,7 @@ const NAV_BY_ROLE = {
   ],
   employee: [
     { to: "/", label: "My Leave", icon: "☺" },
+    { to: "/weekly", label: "Weekly Report", icon: "▤" },
   ],
   pending: [],
 };
