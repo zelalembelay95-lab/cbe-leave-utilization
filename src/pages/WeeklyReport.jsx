@@ -135,3 +135,4 @@ function downloadFile(content, filename, mime) {
   a.click();
   URL.revokeObjectURL(url);
 }
+ 
