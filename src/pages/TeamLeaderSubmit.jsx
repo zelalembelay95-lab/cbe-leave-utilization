@@ -46,6 +46,7 @@ export default function TeamLeaderSubmit() {
     setSubmitting(true);
     setToast(null);
     try {
+      let duplicates = 0;
       for (const p of periods) {
         if (!p.days || !p.start || !p.end) continue;
         const base = {
@@ -60,9 +61,17 @@ export default function TeamLeaderSubmit() {
           submittedByUid: profile.uid,
           submittedByName: profile.displayName || profile.email,
         };
-        await addLeaveEntry(decorateEntryWithWeek(base, weekStart));
+        const result = await addLeaveEntry(decorateEntryWithWeek(base, weekStart));
+        if (result?.duplicate) duplicates++;
       }
-      setToast({ type: "success", text: `Leave recorded for ${employee.fullName}.` });
+      if (duplicates) {
+        setToast({
+          type: "warning",
+          text: `Leave recorded for ${employee.fullName}. ${duplicates} ${duplicates === 1 ? "entry" : "entries"} matched leave already in the system for the same dates, so ${duplicates === 1 ? "it wasn't" : "they weren't"} duplicated.`,
+        });
+      } else {
+        setToast({ type: "success", text: `Leave recorded for ${employee.fullName}.` });
+      }
       resetForm();
     } catch (err) {
       setToast({ type: "error", text: err.message || "Could not submit. Please try again." });
@@ -177,7 +186,13 @@ export default function TeamLeaderSubmit() {
         </div>
 
         {toast && (
-          <p className={`text-sm ${toast.type === "success" ? "text-emerald-700" : "text-red-600"}`}>{toast.text}</p>
+          <p
+            className={`text-sm ${
+              toast.type === "success" ? "text-emerald-700" : toast.type === "warning" ? "text-amber-700" : "text-red-600"
+            }`}
+          >
+            {toast.text}
+          </p>
         )}
 
         <div className="flex items-center gap-3 pt-2">
