@@ -11,6 +11,7 @@ import MonthlyReport from "./pages/MonthlyReport";
 import Balances from "./pages/Balances";
 import AdminEmployees from "./pages/AdminEmployees";
 import AdminUsers from "./pages/AdminUsers";
+import AdminImport from "./pages/AdminImport";
 
 function Gate() {
   const { user, profile, loading, firebaseConfigured } = useAuth();
@@ -61,6 +62,14 @@ function Gate() {
           element={
             <RoleRoute allow={["admin"]} role={profile.role}>
               <AdminUsers />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/import"
+          element={
+            <RoleRoute allow={["admin"]} role={profile.role}>
+              <AdminImport />
             </RoleRoute>
           }
         />
