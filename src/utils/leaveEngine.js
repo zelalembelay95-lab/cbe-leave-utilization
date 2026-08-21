@@ -5,29 +5,66 @@ import { startOfReportWeek, endOfReportWeek } from "./dateWeek";
  * ("S.N | ID | Employee full name | Sector/Division | Department/Unit |
  * Position | #Days | Start | End | Total").
  *
+ * If the same employee (matched by ID) has more than one leave entry in
+ * this reporting week — e.g. two separate periods submitted separately, or
+ * a duplicate that slipped through — they're grouped into a single block:
+ * ID/Name/Sector/Department/Position are shown once (merged, in both the
+ * on-screen table and the Excel export) and the Total column is the sum of
+ * all their days that week.
+ *
  * @param {Array} entries - leave entries (already filtered to the org/team the caller may see)
  * @param {string} weekStart - Monday ISO date (start of the reporting week)
  * @returns {{ weekStart, weekEnd, rows, totalDays }}
  */
 export function buildWeeklyReport(entries, weekStart) {
   const weekEnd = endOfReportWeek(weekStart);
-  const rows = entries
-    .filter((e) => e.weekStart === weekStart)
-    .sort((a, b) => a.employeeName.localeCompare(b.employeeName))
-    .map((e, idx) => ({
-      sn: idx + 1,
-      id: e.employeeId,
-      name: e.employeeName,
-      sector: e.sector,
-      department: e.department,
-      position: e.position,
-      days: e.daysCount,
-      start: e.startDate,
-      end: e.endDate,
-      total: e.daysCount,
-      submittedBy: e.submittedByName,
-    }));
-  const totalDays = round2(rows.reduce((s, r) => s + Number(r.total || 0), 0));
+  const weekEntries = entries.filter((e) => e.weekStart === weekStart);
+
+  const groups = new Map();
+  for (const e of weekEntries) {
+    const key = e.employeeId;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        id: e.employeeId,
+        name: e.employeeName,
+        sector: e.sector,
+        department: e.department,
+        position: e.position,
+        periods: [],
+      });
+    }
+    groups.get(key).periods.push({ start: e.startDate, end: e.endDate, days: Number(e.daysCount || 0) });
+  }
+
+  const groupList = Array.from(groups.values())
+    .map((g) => ({
+      ...g,
+      periods: g.periods.sort((a, b) => a.start.localeCompare(b.start)),
+      total: round2(g.periods.reduce((s, p) => s + p.days, 0)),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const rows = [];
+  groupList.forEach((g, gIdx) => {
+    g.periods.forEach((p, pIdx) => {
+      rows.push({
+        sn: gIdx + 1,
+        id: g.id,
+        name: g.name,
+        sector: g.sector,
+        department: g.department,
+        position: g.position,
+        days: p.days,
+        start: p.start,
+        end: p.end,
+        total: g.total,
+        isFirstOfGroup: pIdx === 0,
+        groupSize: g.periods.length,
+      });
+    });
+  });
+
+  const totalDays = round2(groupList.reduce((s, g) => s + g.total, 0));
   return { weekStart, weekEnd, rows, totalDays };
 }
 
