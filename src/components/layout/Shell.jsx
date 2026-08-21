@@ -7,6 +7,7 @@ const NAV_BY_ROLE = {
     { to: "/", label: "Overview", icon: "◆" },
     { to: "/employees", label: "Employees", icon: "☰" },
     { to: "/users", label: "Users & Roles", icon: "☺" },
+    { to: "/import", label: "Import Leave", icon: "⇪" },
     { to: "/weekly", label: "Weekly Report", icon: "▤" },
     { to: "/monthly", label: "Monthly Report", icon: "▥" },
     { to: "/balances", label: "Annual Balances", icon: "◷" },
