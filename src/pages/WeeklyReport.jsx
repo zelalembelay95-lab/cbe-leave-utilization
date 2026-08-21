@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { watchLeaveEntries } from "../services/db";
 import { startOfReportWeek, endOfReportWeek, formatLong, formatShort, formatMonthDayYear } from "../utils/dateWeek";
 import { buildWeeklyReport } from "../utils/leaveEngine";
-import { exportWeeklyReportXlsx } from "../utils/exportWeeklyXlsx";
 import EmptyState from "../components/ui/EmptyState";
 import { useAuth } from "../context/AuthContext";
 
@@ -10,6 +9,7 @@ export default function WeeklyReport() {
   const { profile } = useAuth();
   const [entries, setEntries] = useState([]);
   const [weekStart, setWeekStart] = useState(startOfReportWeek(new Date()));
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const opts = profile.role === "team_leader" ? { teamLeaderUid: profile.uid } : {};
@@ -23,6 +23,16 @@ export default function WeeklyReport() {
     const rows = report.rows.map((r) => [r.sn, r.id, r.name, r.sector, r.department, r.position, r.days, r.start, r.end, r.total]);
     const csv = [header, ...rows].map((r) => r.map(csvCell).join(",")).join("\n");
     downloadFile(csv, `Weekly-Leave-Report_${report.weekStart}_to_${report.weekEnd}.csv`, "text/csv");
+  }
+
+  async function exportExcel() {
+    setExporting(true);
+    try {
+      const { exportWeeklyReportXlsx } = await import("../utils/exportWeeklyXlsx");
+      await exportWeeklyReportXlsx(report);
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -48,11 +58,11 @@ export default function WeeklyReport() {
             CSV
           </button>
           <button
-            onClick={() => exportWeeklyReportXlsx(report)}
+            onClick={exportExcel}
             className="btn-gold h-[42px]"
-            disabled={!report.rows.length}
+            disabled={!report.rows.length || exporting}
           >
-            Export for HRBP (.xlsx)
+            {exporting ? "Preparing…" : "Export for HRBP (.xlsx)"}
           </button>
         </div>
       </div>
@@ -135,4 +145,3 @@ function downloadFile(content, filename, mime) {
   a.click();
   URL.revokeObjectURL(url);
 }
- 
