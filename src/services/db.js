@@ -69,9 +69,13 @@ export function watchLeaveEntries(cb, { teamLeaderUid = null, year = null } = {}
 }
 
 export async function addLeaveEntry(entry) {
-  await apiPost("/api/leave-entries", entry);
+  return apiPost("/api/leave-entries", entry);
 }
 
 export async function deleteLeaveEntry(entryId) {
   await apiDelete(`/api/leave-entries?id=${encodeURIComponent(entryId)}`);
+}
+
+export async function dedupeLeaveEntries() {
+  return apiPost("/api/dedupe-leave-entries", {});
 }
