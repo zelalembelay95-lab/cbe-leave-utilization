@@ -92,18 +92,24 @@ export default function WeeklyReport() {
                 </tr>
               </thead>
               <tbody>
-                {report.rows.map((r) => (
-                  <tr key={`${r.id}-${r.sn}`}>
-                    <td>{r.sn}</td>
-                    <td className="font-mono text-xs">{r.id}</td>
-                    <td className="font-medium">{r.name}</td>
-                    <td>{r.sector}</td>
-                    <td>{r.department}</td>
-                    <td>{r.position}</td>
+                {report.rows.map((r, i) => (
+                  <tr key={`${r.id}-${i}`}>
+                    {r.isFirstOfGroup ? (
+                      <>
+                        <td rowSpan={r.groupSize}>{r.sn}</td>
+                        <td rowSpan={r.groupSize} className="font-mono text-xs">{r.id}</td>
+                        <td rowSpan={r.groupSize} className="font-medium">{r.name}</td>
+                        <td rowSpan={r.groupSize}>{r.sector}</td>
+                        <td rowSpan={r.groupSize}>{r.department}</td>
+                        <td rowSpan={r.groupSize}>{r.position}</td>
+                      </>
+                    ) : null}
                     <td>{r.days}</td>
                     <td>{formatShort(r.start)}</td>
                     <td>{formatShort(r.end)}</td>
-                    <td className="font-semibold">{r.total}</td>
+                    {r.isFirstOfGroup ? (
+                      <td rowSpan={r.groupSize} className="font-semibold">{r.total}</td>
+                    ) : null}
                   </tr>
                 ))}
               </tbody>
