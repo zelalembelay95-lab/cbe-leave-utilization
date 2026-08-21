@@ -56,13 +56,31 @@ export async function exportWeeklyReportXlsx(report, division = "NHQ - Building 
   ws.getRow(5).height = 22;
   ws.getRow(6).height = 48;
 
-  // Data rows
+  // Data rows — merge S.N/ID/Name/Sector/Department/Position/Total cells
+  // vertically when the same employee has more than one leave period this
+  // week (grouped by buildWeeklyReport), so it reads as one block per person.
   let r = 7;
   for (const row of report.rows) {
-    const values = [row.sn, row.id, row.name, row.sector, row.department, row.position, row.days, formatMonthDayYear(row.start), formatMonthDayYear(row.end), row.total];
+    if (row.isFirstOfGroup) {
+      [1, 2, 3, 4, 5, 6, 10].forEach((col) => {
+        if (row.groupSize > 1) ws.mergeCells(r, col, r + row.groupSize - 1, col);
+      });
+    }
+    const values = [
+      row.isFirstOfGroup ? row.sn : null,
+      row.isFirstOfGroup ? row.id : null,
+      row.isFirstOfGroup ? row.name : null,
+      row.isFirstOfGroup ? row.sector : null,
+      row.isFirstOfGroup ? row.department : null,
+      row.isFirstOfGroup ? row.position : null,
+      row.days,
+      formatMonthDayYear(row.start),
+      formatMonthDayYear(row.end),
+      row.isFirstOfGroup ? row.total : null,
+    ];
     values.forEach((v, i) => {
       const cell = ws.getCell(r, i + 1);
-      cell.value = v;
+      if (v !== null) cell.value = v;
       cell.font = DATA_FONT;
       cell.border = THIN_BORDER;
       cell.alignment = i === 5 ? LEFT : CENTER; // Position column left-aligned
