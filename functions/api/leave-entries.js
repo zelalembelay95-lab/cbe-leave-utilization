@@ -61,6 +61,23 @@ export async function onRequestPost(context) {
       submitted_by_uid: caller.uid,
       submitted_by_name: body.submittedByName || caller.email,
     };
+
+    // Duplicate guard: same employee + same exact date range + same day
+    // count already exists → don't create a second copy. Covers accidental
+    // double-submits by a team leader and duplicate rows in an Excel import.
+    const existing = await supabaseJson(env, {
+      table: "leave_entries",
+      query:
+        `?employee_id=eq.${encodeURIComponent(row.employee_id)}` +
+        `&start_date=eq.${encodeURIComponent(row.start_date)}` +
+        `&end_date=eq.${encodeURIComponent(row.end_date)}` +
+        `&days_count=eq.${encodeURIComponent(row.days_count)}` +
+        `&select=*&limit=1`,
+    });
+    if (existing.length) {
+      return json({ ...toEntry(existing[0]), duplicate: true });
+    }
+
     const [created] = await supabaseJson(env, { table: "leave_entries", method: "POST", body: [row] });
     return json(toEntry(created));
   } catch (err) {
