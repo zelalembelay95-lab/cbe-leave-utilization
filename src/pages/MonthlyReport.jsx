@@ -13,6 +13,7 @@ export default function MonthlyReport() {
   const [entries, setEntries] = useState([]);
   const [year, setYear] = useState(currentYear());
   const [month, setMonth] = useState(currentMonth());
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const opts = profile.role === "team_leader" ? { teamLeaderUid: profile.uid, year } : { year };
@@ -26,6 +27,16 @@ export default function MonthlyReport() {
     const rows = report.rows.map((r) => [r.id, r.name, r.sector, r.department, r.position, r.entryCount, r.totalDays]);
     const csv = [header, ...rows].map((r) => r.map(csvCell).join(",")).join("\n");
     downloadFile(csv, `Monthly-Leave-Report_${monthLabel(year, month)}.csv`, "text/csv");
+  }
+
+  async function exportExcel() {
+    setExporting(true);
+    try {
+      const { exportMonthlyReportXlsx } = await import("../utils/exportMonthlyXlsx");
+      await exportMonthlyReportXlsx(report);
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -55,8 +66,15 @@ export default function MonthlyReport() {
               onChange={(e) => setYear(Number(e.target.value))}
             />
           </div>
-          <button onClick={exportCsv} className="btn-gold h-[42px]" disabled={!report.rows.length}>
-            Export CSV
+          <button onClick={exportCsv} className="btn-ghost h-[42px]" disabled={!report.rows.length}>
+            CSV
+          </button>
+          <button
+            onClick={exportExcel}
+            className="btn-gold h-[42px]"
+            disabled={!report.rows.length || exporting}
+          >
+            {exporting ? "Preparing…" : "Export Excel (.xlsx)"}
           </button>
         </div>
       </div>
