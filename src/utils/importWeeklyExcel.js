@@ -59,6 +59,7 @@ export async function parseLeaveExcelFile(file, employees) {
 
   const rows = [];
   const errors = [];
+  const seenKeys = new Set();
 
   for (let r = lastHeaderRow + 1; r < grid.length; r++) {
     const line = grid[r];
@@ -100,6 +101,15 @@ export async function parseLeaveExcelFile(file, employees) {
       continue;
     }
 
+    // Skip exact duplicates already seen earlier in this same file (same
+    // employee, same date range, same day count).
+    const dupeKey = `${id}|${start}|${end}|${days}`;
+    if (seenKeys.has(dupeKey)) {
+      errors.push(`Row ${rowNum}: duplicate of an earlier row in this file for ${name} (${start} to ${end}) — skipped.`);
+      continue;
+    }
+    seenKeys.add(dupeKey);
+
     const weekStart = startOfReportWeek(start);
     const base = {
       employeeId: id,
@@ -126,4 +136,3 @@ function toDateISO(value) {
   if (!Number.isNaN(d.getTime())) return toISO(d);
   return null;
 }
- 
