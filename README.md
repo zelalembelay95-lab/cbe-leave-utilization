@@ -6,8 +6,17 @@ workflow with one system that:
 
 - Team leaders **submit weekly leave** for employees under them (same fields as your Google Form). Reporting
   weeks run **Friday → Thursday**, matching HRBP's official template, which is sent every Friday.
+- If the same employee has more than one leave period in the same reporting week, the weekly report **merges
+  them into one block** (ID/Name/Sector/Department/Position shown once, days summed into one Total) — both
+  on-screen and in the exported Excel file.
 - **Admins can import leave from an Excel file** for anything not submitted through the team-leader form — it's
   matched against the roster and added straight into the system, showing up in reports and balances immediately.
+- If the same employee has more than one leave period in the same reporting week, the weekly report **merges
+  them into one block** (ID/Name/Sector/Department/Position shown once, days summed into one Total) — both
+  on-screen and in the exported Excel file.
+- **Duplicate leave entries are blocked automatically** — same employee, same dates, same day count won't be
+  recorded twice, whether submitted by a team leader, imported from Excel, or already sitting in the database
+  (Admin → Import Leave has a one-click cleanup for anything duplicated before this check existed).
 - Both the weekly and monthly reports **export as fully-styled Excel files** — same fonts, gold header, and
   shaded columns as your original HRBP template, not a plain CSV.
 - Weekly reports **roll up into a monthly report** automatically — no manual copy-paste.
