@@ -4,9 +4,12 @@ A web app for **NHQ Building & Property Management Division, Commercial Bank of 
 uploaded Google Form ("Weekly Leave Utilization Submission") and Excel reports. It replaces the form + spreadsheet
 workflow with one system that:
 
-- Team leaders **submit weekly leave** for employees under them (same fields as your Google Form).
-- The app **auto-builds the weekly report** in your existing Excel layout (S.N, ID, Name, Sector/Division,
-  Department/Unit, Position, Days, Start, End, Total).
+- Team leaders **submit weekly leave** for employees under them (same fields as your Google Form). Reporting
+  weeks run **Friday → Thursday**, matching HRBP's official template, which is sent every Friday.
+- **Admins can import leave from an Excel file** for anything not submitted through the team-leader form — it's
+  matched against the roster and added straight into the system, showing up in reports and balances immediately.
+- Both the weekly and monthly reports **export as fully-styled Excel files** — same fonts, gold header, and
+  shaded columns as your original HRBP template, not a plain CSV.
 - Weekly reports **roll up into a monthly report** automatically — no manual copy-paste.
 - The app tracks each employee's **leave balance directly from HR's export**: net leave accrual to date, and
   what portion of it will **expire on December 31** if unused (Ethiopian annual leave has no carry-over) —
@@ -65,7 +68,7 @@ supabase/
 
 | Role | Can do |
 |---|---|
-| **Admin** | Add/edit/remove employees, set annual entitlements, approve new accounts and assign roles, **create accounts directly with a chosen email/password/role**, view every report |
+| **Admin** | Add/edit/remove employees, set annual entitlements, approve new accounts and assign roles, **create accounts directly with a chosen email/password/role**, **import leave from an Excel file**, view every report |
 | **Manager** | Read-only: weekly report, monthly report, annual balances, overview dashboard |
 | **Team Leader** | Submit weekly leave for their team; view the reports for what they've submitted |
 | **Employee** | View their own leave history and annual balance only |
