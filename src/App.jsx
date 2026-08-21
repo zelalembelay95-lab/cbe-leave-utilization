@@ -94,9 +94,11 @@ function RoleRoute({ allow, role, children }) {
 function SplashScreen() {
   return (
     <div className="min-h-screen bg-cbe-hero flex items-center justify-center">
-      <div className="w-16 h-16 rounded-2xl bg-white/95 flex items-center justify-center p-2 shadow-card animate-pulse">
-        <img src="/cbe-logo.svg" alt="Commercial Bank of Ethiopia" className="w-full h-full object-contain" />
-      </div>
+      <img
+        src="/cbe-logo.svg"
+        alt="Commercial Bank of Ethiopia"
+        className="w-20 h-20 object-contain drop-shadow-lg animate-pulse"
+      />
     </div>
   );
 }
