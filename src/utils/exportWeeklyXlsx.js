@@ -1,80 +1,105 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { formatLong, formatMonthDayYear } from "./dateWeek";
+import {
+  TITLE_FONT,
+  HEADER_FONT,
+  DATA_FONT,
+  GOLD_FILL,
+  GRAY_FILL,
+  THIN_BORDER,
+  CENTER,
+  LEFT,
+  styleTitleRow,
+  styleHeaderCell,
+  downloadWorkbook,
+} from "./xlsxStyle";
 
-// Recreates the layout of the official HRBP weekly leave utilization
-// template: bank name / division / title rows, a two-row header with
-// "Leave Utilized" spanning four sub-columns, data rows, a supervisor
-// signature line, and the three standard notes.
-export function exportWeeklyReportXlsx(report, division = "NHQ - Building Maintenance and Property Management Division") {
-  const weekLabel = `Employees on Leave during the Week dated ${formatLong(report.weekStart)} to ${formatMonthDayYear(report.weekEnd)}`;
+const COLS = 10; // S.N .. Total
 
-  const aoa = [
-    ["Commercial Bank of Ethiopia"],
-    [division],
-    ["Weekly Report on Employees Leave Utilization"],
-    [weekLabel],
-    ["S.N", "ID", "Employee full name", "Sector/Division", "Department/Unit", "Position", "Leave Utilized", "", "", ""],
-    ["", "", "", "", "", "", "#No. of Days on Leave (Leave Approved on Oracle)", "Leave Start Date", "Leave End Date", "Total"],
-    ...report.rows.map((r) => [
-      r.sn,
-      r.id,
-      r.name,
-      r.sector,
-      r.department,
-      r.position,
-      r.days,
-      formatMonthDayYear(r.start),
-      formatMonthDayYear(r.end),
-      r.total,
-    ]),
-    ["", "", "", "", "", "", "", "", "Total", report.totalDays],
-    [],
-    ["Supervisor Name and Position: ____________________________"],
-    [],
-    ["Note: Employees who have returned from leave and are on work in the reporting week shall be excluded from the report"],
-    ["Whereas, Employees whose leave extended beyond a week and are still on leave shall be included and remain in the report"],
-    ["The Report Shall be sent Every Friday to the HRBP Department"],
+export async function exportWeeklyReportXlsx(report, division = "NHQ - Building Maintenance and Property Management Division") {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Weekly Leave Report", {
+    views: [{ showGridLines: false }],
+  });
+
+  ws.columns = [
+    { width: 6 }, { width: 12 }, { width: 30 }, { width: 22 }, { width: 26 },
+    { width: 32 }, { width: 20 }, { width: 16 }, { width: 16 }, { width: 10 },
   ];
 
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  // Title block (rows 1-4)
+  ws.getRow(1).getCell(1).value = "Commercial Bank of Ethiopia";
+  ws.getRow(2).getCell(1).value = division;
+  ws.getRow(3).getCell(1).value = "Weekly Report on Employees Leave Utilization";
+  ws.getRow(4).getCell(1).value =
+    `Employees on Leave during the Week dated ${formatLong(report.weekStart)} to ${formatMonthDayYear(report.weekEnd)}`;
+  [1, 2, 3, 4].forEach((r) => {
+    styleTitleRow(ws, r, COLS);
+    ws.getRow(r).height = 23;
+  });
 
-  const dataRowCount = report.rows.length;
-  const totalRow = 6 + dataRowCount; // 0-indexed row of the "Total" line
-  const lastDataRow = 5 + dataRowCount; // 0-indexed row of the last data entry
+  // Header (rows 5-6, merged)
+  const headerLabels = ["S.N", "ID", "Employee full name", "Sector/Division", "Department/Unit", "Position"];
+  headerLabels.forEach((label, i) => {
+    ws.getCell(5, i + 1).value = label;
+    ws.mergeCells(5, i + 1, 6, i + 1);
+  });
+  ws.getCell(5, 7).value = "Leave Utilized";
+  ws.mergeCells(5, 7, 5, 10);
+  const subLabels = ["#No. of Days on Leave (Leave Approved on Oracle)", "Leave Start Date", "Leave End Date", "Total"];
+  subLabels.forEach((label, i) => {
+    ws.getCell(6, i + 7).value = label;
+  });
+  for (let r = 5; r <= 6; r++) {
+    for (let c = 1; c <= COLS; c++) styleHeaderCell(ws, r, c);
+  }
+  ws.getRow(5).height = 22;
+  ws.getRow(6).height = 48;
 
-  ws["!merges"] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }, // bank name
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }, // division
-    { s: { r: 2, c: 0 }, e: { r: 2, c: 9 } }, // report title
-    { s: { r: 3, c: 0 }, e: { r: 3, c: 9 } }, // week label
-    { s: { r: 4, c: 0 }, e: { r: 5, c: 0 } }, // S.N
-    { s: { r: 4, c: 1 }, e: { r: 5, c: 1 } }, // ID
-    { s: { r: 4, c: 2 }, e: { r: 5, c: 2 } }, // Employee full name
-    { s: { r: 4, c: 3 }, e: { r: 5, c: 3 } }, // Sector/Division
-    { s: { r: 4, c: 4 }, e: { r: 5, c: 4 } }, // Department/Unit
-    { s: { r: 4, c: 5 }, e: { r: 5, c: 5 } }, // Position
-    { s: { r: 4, c: 6 }, e: { r: 4, c: 9 } }, // Leave Utilized (spans 4 sub-columns)
-    { s: { r: totalRow, c: 0 }, e: { r: totalRow, c: 8 } }, // "Total" label row
-    { s: { r: totalRow + 2, c: 0 }, e: { r: totalRow + 2, c: 9 } }, // signature line
-    { s: { r: totalRow + 4, c: 0 }, e: { r: totalRow + 4, c: 9 } }, // note 1
-    { s: { r: totalRow + 5, c: 0 }, e: { r: totalRow + 5, c: 9 } }, // note 2
-    { s: { r: totalRow + 6, c: 0 }, e: { r: totalRow + 6, c: 9 } }, // note 3
+  // Data rows
+  let r = 7;
+  for (const row of report.rows) {
+    const values = [row.sn, row.id, row.name, row.sector, row.department, row.position, row.days, formatMonthDayYear(row.start), formatMonthDayYear(row.end), row.total];
+    values.forEach((v, i) => {
+      const cell = ws.getCell(r, i + 1);
+      cell.value = v;
+      cell.font = DATA_FONT;
+      cell.border = THIN_BORDER;
+      cell.alignment = i === 5 ? LEFT : CENTER; // Position column left-aligned
+      if (i === 6 || i === 9) cell.fill = GRAY_FILL; // Days / Total columns
+    });
+    ws.getRow(r).height = 26;
+    r++;
+  }
+
+  // Total row
+  ws.mergeCells(r, 1, r, 9);
+  ws.getCell(r, 1).value = "Total leave days for the week";
+  ws.getCell(r, 1).font = { ...HEADER_FONT };
+  ws.getCell(r, 1).alignment = { horizontal: "right", vertical: "middle" };
+  ws.getCell(r, 10).value = report.totalDays;
+  ws.getCell(r, 10).font = HEADER_FONT;
+  ws.getCell(r, 10).fill = GOLD_FILL;
+  ws.getCell(r, 10).border = THIN_BORDER;
+  ws.getCell(r, 10).alignment = CENTER;
+  r += 2;
+
+  ws.mergeCells(r, 1, r, COLS);
+  ws.getCell(r, 1).value = "Supervisor Name and Position: ____________________________";
+  ws.getCell(r, 1).font = DATA_FONT;
+  r += 2;
+
+  const notes = [
+    "Note: Employees who have returned from leave and are on work in the reporting week shall be excluded from the report",
+    "Whereas, Employees whose leave extended beyond a week and are still on leave shall be included and remain in the report",
+    "The Report Shall be sent Every Friday to the HRBP Department",
   ];
+  notes.forEach((note, i) => {
+    ws.mergeCells(r + i, 1, r + i, COLS);
+    const cell = ws.getCell(r + i, 1);
+    cell.value = note;
+    cell.font = { ...DATA_FONT, size: 10, italic: true };
+  });
 
-  ws["!cols"] = [
-    { wch: 6 },
-    { wch: 12 },
-    { wch: 30 },
-    { wch: 22 },
-    { wch: 26 },
-    { wch: 32 },
-    { wch: 20 },
-    { wch: 16 },
-    { wch: 16 },
-    { wch: 10 },
-  ];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Weekly Leave Report");
-  XLSX.writeFile(wb, `Weekly-Leave-Report_${report.weekStart}_to_${report.weekEnd}.xlsx`);
+  await downloadWorkbook(wb, `Weekly-Leave-Report_${report.weekStart}_to_${report.weekEnd}.xlsx`);
 }
