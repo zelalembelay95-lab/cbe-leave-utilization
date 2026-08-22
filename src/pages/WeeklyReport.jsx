@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { watchLeaveEntries } from "../services/db";
-import { startOfReportWeek, endOfReportWeek, formatLong, formatShort, formatMonthDayYear } from "../utils/dateWeek";
+import { startOfReportWeek, formatLong, formatMonthDayYear } from "../utils/dateWeek";
 import { buildWeeklyReport } from "../utils/leaveEngine";
-import EmptyState from "../components/ui/EmptyState";
+import LeaveReportTable from "../components/reports/LeaveReportTable";
 import { useAuth } from "../context/AuthContext";
 
 export default function WeeklyReport() {
@@ -71,68 +71,12 @@ export default function WeeklyReport() {
         Employees on Leave during the Week dated {formatLong(report.weekStart)} to {formatMonthDayYear(report.weekEnd)}
       </p>
 
-      {!report.rows.length ? (
-        <EmptyState title="No leave recorded this week" body="Once team leaders submit entries for this reporting week, they'll appear here." />
-      ) : (
-        <>
-          <div className="table-shell">
-            <table className="report">
-              <thead>
-                <tr>
-                  <th>S.N</th>
-                  <th>ID</th>
-                  <th>Employee full name</th>
-                  <th>Sector/Division</th>
-                  <th>Department/Unit</th>
-                  <th>Position</th>
-                  <th># Days</th>
-                  <th>Start date</th>
-                  <th>End date</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.rows.map((r, i) => (
-                  <tr key={`${r.id}-${i}`}>
-                    {r.isFirstOfGroup ? (
-                      <>
-                        <td rowSpan={r.groupSize}>{r.sn}</td>
-                        <td rowSpan={r.groupSize} className="font-mono text-xs">{r.id}</td>
-                        <td rowSpan={r.groupSize} className="font-medium">{r.name}</td>
-                        <td rowSpan={r.groupSize}>{r.sector}</td>
-                        <td rowSpan={r.groupSize}>{r.department}</td>
-                        <td rowSpan={r.groupSize}>{r.position}</td>
-                      </>
-                    ) : null}
-                    <td>{r.days}</td>
-                    <td>{formatShort(r.start)}</td>
-                    <td>{formatShort(r.end)}</td>
-                    {r.isFirstOfGroup ? (
-                      <td rowSpan={r.groupSize} className="font-semibold">{r.total}</td>
-                    ) : null}
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={9} className="text-right font-semibold">Total leave days for the week</td>
-                  <td className="font-display font-semibold text-cbe-purple-800">{report.totalDays}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <div className="mt-6 text-sm text-cbe-ink">
-            Supervisor Name and Position: ____________________________
-          </div>
-        </>
-      )}
-
-      <div className="text-xs text-cbe-slate mt-4 space-y-1">
-        <p>Note: Employees who have returned from leave and are on work in the reporting week shall be excluded from the report.</p>
-        <p>Whereas, employees whose leave extended beyond a week and are still on leave shall be included and remain in the report.</p>
-        <p className="font-medium text-cbe-purple-800">The report shall be sent every Friday to the HRBP Department.</p>
-      </div>
+      <LeaveReportTable
+        rows={report.rows}
+        totalDays={report.totalDays}
+        emptyTitle="No leave recorded this week"
+        emptyBody="Once team leaders submit entries for this reporting week, they'll appear here."
+      />
     </div>
   );
 }
