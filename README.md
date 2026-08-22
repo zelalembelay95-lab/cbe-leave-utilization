@@ -5,15 +5,17 @@ uploaded Google Form ("Weekly Leave Utilization Submission") and Excel reports. 
 workflow with one system that:
 
 - Team leaders **submit weekly leave** for employees under them (same fields as your Google Form). Reporting
-  weeks run **Friday → Thursday**, matching HRBP's official template, which is sent every Friday.
-- If the same employee has more than one leave period in the same reporting week, the weekly report **merges
-  them into one block** (ID/Name/Sector/Department/Position shown once, days summed into one Total) — both
-  on-screen and in the exported Excel file.
+  weeks run **Monday → Saturday**.
+- If the same employee has more than one leave period in the same reporting week or month, the report **merges
+  them into one block** (ID/Name/Position shown once, days summed into one Total). Sector/Division and
+  Department/Unit merge into a single cell across the **whole report** whenever everyone shares the same value
+  (as they do here — every employee is "Facility Management" / "Comprehensive Management") — both on-screen and
+  in the exported Excel file.
+- The **monthly report has the exact same layout as the weekly report** — same columns, same merging, same
+  signature line and notes — just scoped to a whole month instead of one week, with the title and date line
+  updated to match.
 - **Admins can import leave from an Excel file** for anything not submitted through the team-leader form — it's
   matched against the roster and added straight into the system, showing up in reports and balances immediately.
-- If the same employee has more than one leave period in the same reporting week, the weekly report **merges
-  them into one block** (ID/Name/Sector/Department/Position shown once, days summed into one Total) — both
-  on-screen and in the exported Excel file.
 - **Duplicate leave entries are blocked automatically** — same employee, same dates, same day count won't be
   recorded twice, whether submitted by a team leader, imported from Excel, or already sitting in the database
   (Admin → Import Leave has a one-click cleanup for anything duplicated before this check existed).
