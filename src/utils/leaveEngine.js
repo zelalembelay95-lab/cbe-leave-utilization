@@ -1,4 +1,5 @@
 import { startOfReportWeek, endOfReportWeek } from "./dateWeek";
+import { SECTOR, DEPARTMENT } from "../data/seedEmployees";
 
 /**
  * Groups leave entries by employee, sorted by name, with each employee's
@@ -7,10 +8,16 @@ import { startOfReportWeek, endOfReportWeek } from "./dateWeek";
  * difference between the two reports is which entries get passed in and
  * how the title is worded.
  *
+ * Sector and Department are forced to the organization-wide constants
+ * (SECTOR / DEPARTMENT) rather than whatever happens to be stored on each
+ * entry — that guarantees those two columns always merge into one clean
+ * cell across the whole report, instead of depending on every employee
+ * record in the database having been kept perfectly in sync.
+ *
  * Which cells actually get merged (ID/Name/Position per employee; whole
- * blocks for Sector/Department if everyone shares one value) is decided at
- * render/export time via computeRuns() in reportRuns.js — this function
- * just returns flat, fully-populated rows.
+ * blocks for Sector/Department) is decided at render/export time via
+ * computeRuns() in reportRuns.js — this function just returns flat, fully-
+ * populated rows.
  */
 function groupEntriesByEmployee(entries) {
   const groups = new Map();
@@ -20,8 +27,8 @@ function groupEntriesByEmployee(entries) {
       groups.set(key, {
         id: e.employeeId,
         name: e.employeeName,
-        sector: e.sector,
-        department: e.department,
+        sector: SECTOR,
+        department: DEPARTMENT,
         position: e.position,
         periods: [],
       });
